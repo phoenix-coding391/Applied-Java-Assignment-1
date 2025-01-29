@@ -9,8 +9,8 @@ public class BookDatabaseManager {
     private static final String USER = "root";
     private static final String PASS = "nbudmaria";
 
-    private List<Book> books;
-    private List<Author> authors;
+    private final List<Book> books;
+    private final List<Author> authors;
 
     public BookDatabaseManager() {
         books = new ArrayList<>();
@@ -104,8 +104,26 @@ public class BookDatabaseManager {
             e.printStackTrace();
         }
 
-        loadBookAuthors(bookList);
-        loadAuthorBooks(authors);
+        List<Author> authorList = new ArrayList<>();
+        sql = "SELECT * FROM authors";
+        try (Connection conn = connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Author author = new Author(
+                        rs.getInt("authorID"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName")
+                );
+                authorList.add(author);
+                authors.add(author);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        loadBookAuthors(bookList, authorList);
+        loadAuthorBooks(authorList, bookList);
         return bookList;
     }
 
@@ -128,12 +146,31 @@ public class BookDatabaseManager {
             e.printStackTrace();
         }
 
-        loadBookAuthors(books);
-        loadAuthorBooks(authorList);
+        List<Book> bookList = new ArrayList<>();
+        sql = "SELECT * FROM titles";
+        try (Connection conn = connect();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                Book book = new Book(
+                        rs.getString("isbn"),
+                        rs.getString("title"),
+                        rs.getInt("editionNumber"),
+                        rs.getString("copyright")
+                );
+                bookList.add(book);
+                books.add(book);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        loadBookAuthors(bookList, authorList);
+        loadAuthorBooks(authorList, bookList);
         return authorList;
     }
 
-    private void loadBookAuthors(List<Book> bookList) {
+    private void loadBookAuthors(List<Book> bookList, List<Author> authorList) {
         String sql = "SELECT * FROM authorISBN";
         try (Connection conn = connect();
              Statement stmt = conn.createStatement();
@@ -143,7 +180,7 @@ public class BookDatabaseManager {
                 String isbn = rs.getString("isbn");
 
                 Book book = findBookByIsbn(isbn, bookList);
-                Author author = findAuthorById(authorID, authors);
+                Author author = findAuthorById(authorID, authorList);
 
                 if (book != null && author != null) {
                     book.addAuthor(author);
@@ -155,7 +192,7 @@ public class BookDatabaseManager {
         }
     }
 
-    private void loadAuthorBooks(List<Author> authorList) {
+    private void loadAuthorBooks(List<Author> authorList, List<Book> bookList) {
         String sql = "SELECT * FROM authorISBN";
         try (Connection conn = connect();
              Statement stmt = conn.createStatement();
@@ -164,7 +201,7 @@ public class BookDatabaseManager {
                 int authorID = rs.getInt("authorID");
                 String isbn = rs.getString("isbn");
 
-                Book book = findBookByIsbn(isbn, books);
+                Book book = findBookByIsbn(isbn, bookList);
                 Author author = findAuthorById(authorID, authorList);
 
                 if (book != null && author != null) {
@@ -186,6 +223,7 @@ public class BookDatabaseManager {
             pstmt.setString(3, book.getCopyright());
             pstmt.setString(4, book.getIsbn());
             pstmt.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

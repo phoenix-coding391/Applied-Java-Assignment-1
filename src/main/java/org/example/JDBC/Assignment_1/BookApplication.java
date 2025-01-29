@@ -12,7 +12,6 @@ public class BookApplication {
 
         Scanner input = new Scanner(System.in);
 
-        // Initially populate the lists
         List<Book> books = dbm.getAllBooks();
         List<Author> authors = dbm.getAllAuthors();
 
@@ -75,7 +74,6 @@ public class BookApplication {
                         dbm.updateBook(BookToUpdate);
                         System.out.println("Book updated successfully!");
 
-                        // Refresh the lists after updating
                         books = dbm.getAllBooks();
                         authors = dbm.getAllAuthors();
 
@@ -84,7 +82,6 @@ public class BookApplication {
                     }
                     break;
                 case 4:
-
                         System.out.print("Enter Author First Name: ");
                         Scanner newAuthorFirstNameInput = new Scanner(System.in);
                         String newAuthorFirstName = newAuthorFirstNameInput.nextLine();
@@ -101,7 +98,6 @@ public class BookApplication {
                         authors = dbm.getAllAuthors();
                         books = dbm.getAllBooks();
                         break;
-
                 case 5:
                     System.out.print("Enter New Book ISBN: ");
                     Scanner newBookISBNInput = new Scanner(System.in);
@@ -154,9 +150,10 @@ public class BookApplication {
                             System.out.print("Enter Author Last Name: ");
                             String lastName = newBookISBNInput.nextLine();
 
-                            Author newAuthor = new Author(0, firstName, lastName);
-                            newBook.addAuthor(newAuthor);
+                            int newAuthorID = authors.getLast().getAuthorID() + 1;
 
+                            Author newAuthor = new Author(newAuthorID, firstName, lastName);
+                            newBook.addAuthor(newAuthor);
                         }
                     }
 
@@ -166,8 +163,6 @@ public class BookApplication {
                     books = dbm.getAllBooks();
                     authors = dbm.getAllAuthors();
                     break;
-
-
                 case 6:
                     return;
             }
