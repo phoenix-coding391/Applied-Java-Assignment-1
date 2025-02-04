@@ -1,171 +1,243 @@
 package org.example.JDBC.Assignment_1;
 
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.Scanner;
 
 public class BookApplication {
 
+    private static final BookDatabaseManager dbm = new BookDatabaseManager();
+    private static List<Book> books = dbm.getAllBooks();
+    private static List<Author> authors = dbm.getAllAuthors();
+
     public static void main(String[] args) {
-        BookDatabaseManager dbm = new BookDatabaseManager();
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Java Book Application");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 400);
 
-        System.out.println("Java Book Application. Enter Command: ");
+            JPanel panel = new JPanel();
+            panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        Scanner input = new Scanner(System.in);
+            JLabel label = new JLabel("Java Book Application. Choose Action:");
+            label.setFont(new Font("Arial", Font.BOLD, 16));
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            panel.add(label);
 
-        List<Book> books = dbm.getAllBooks();
-        List<Author> authors = dbm.getAllAuthors();
+            panel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        while (true) {
-            System.out.println("Choose Action:\n1: Show All Books\n2: Show All Authors\n3: Update Book\n4: Add New Author\n5: Add New Book\n6: Exit\n");
+            addButton(panel, "Show All Books", e -> showAllBooks());
+            addButton(panel, "Show All Authors", e -> showAllAuthors());
+            addButton(panel, "Update Book", e -> updateBook());
+            addButton(panel, "Update Author", e -> updateAuthor());
+            addButton(panel, "Add New Author", e -> addNewAuthor());
+            addButton(panel, "Add New Book", e -> addNewBook());
+            addButton(panel, "Delete Book By ISBN", e -> deleteBook());
+            addButton(panel, "Delete Author By ID", e -> deleteAuthor());
 
-            System.out.print("Enter Action: ");
-            int command = input.nextInt();
+            panel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-            switch (command) {
-                case 1:
-                    for (Book book : books) {
-                        System.out.println("ISBN: " + book.getIsbn());
-                        System.out.println("Title: " + book.getTitle());
-                        System.out.println("Edition Number: " + book.getEditionNumber());
-                        System.out.println("Copyright: " + book.getCopyright());
-                        System.out.println("Authors:");
-                        for (Author author : book.getAuthorList()) {
-                            System.out.println("  - " + author.getFirstName() + " " + author.getLastName());
-                        }
-                        System.out.println();
-                    }
-                    break;
-                case 2:
-                    for (Author author : authors) {
-                        System.out.println();
-                        System.out.println("Author ID: " + author.getAuthorID());
-                        System.out.println("First Name: " + author.getFirstName());
-                        System.out.println("Last Name: " + author.getLastName());
-                        System.out.println("Author Books:");
-                        for (Book book : author.getBookList()) {
-                            System.out.println("  - " + book.getTitle());
-                        }
-                    }
-                    System.out.println();
-                    break;
-                case 3:
-                    Scanner userInput = new Scanner(System.in);
-                    System.out.print("Enter Book ISBN: ");
+            JButton exitButton = new JButton("Exit");
+            exitButton.setFont(new Font("Arial", Font.BOLD, 14));
+            exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            exitButton.addActionListener(e -> System.exit(0));
+            panel.add(exitButton);
 
-                    String bookISBN = userInput.nextLine();
+            frame.getContentPane().add(panel);
+            frame.setVisible(true);
+        });
+    }
 
-                    Book BookToUpdate = dbm.findBookByIsbn(bookISBN, books);
+    private static void addButton(JPanel panel, String text, ActionListener action) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.PLAIN, 14));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.addActionListener(action);
+        button.setMaximumSize(new Dimension(200, 30));
+        panel.add(button);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+    }
 
-                    if (BookToUpdate != null) {
+    private static void showAllBooks() {
+        StringBuilder message = new StringBuilder("*** All Books ***\n");
+        for (Book book : books) {
+            message.append("----------------------------\n");
+            message.append("ISBN: ").append(book.getIsbn()).append("\n");
+            message.append("Title: ").append(book.getTitle()).append("\n");
+            message.append("Edition Number: ").append(book.getEditionNumber()).append("\n");
+            message.append("Copyright: ").append(book.getCopyright()).append("\n");
+            message.append("Authors:\n");
+            for (Author author : book.getAuthorList()) {
+                message.append("  - ").append(author.getFirstName()).append(" ").append(author.getLastName()).append("\n");
+            }
+            message.append("----------------------------\n\n");
+        }
 
-                        System.out.print("Enter New Book Title: ");
-                        String updatedBookTitle = userInput.nextLine();
+        JTextArea textArea = new JTextArea(message.toString());
+        textArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        textArea.setEditable(false);
 
-                        System.out.print("Enter New Book Copyright Year: ");
-                        String updatedBookCopyrightYear = userInput.nextLine();
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
 
-                        System.out.print("Enter New Book Edition Number: ");
-                        int updatedBookEditionNumber = userInput.nextInt();
+        JOptionPane.showMessageDialog(null, scrollPane, "Books", JOptionPane.INFORMATION_MESSAGE);
+    }
 
-                        BookToUpdate.setTitle(updatedBookTitle);
-                        BookToUpdate.setEditionNumber(updatedBookEditionNumber);
-                        BookToUpdate.setCopyright(updatedBookCopyrightYear);
+    private static void showAllAuthors() {
+        StringBuilder message = new StringBuilder("*** All Authors ***\n");
+        for (Author author : authors) {
+            message.append("----------------------------\n");
+            message.append("Author ID: ").append(author.getAuthorID()).append("\n");
+            message.append("First Name: ").append(author.getFirstName()).append("\n");
+            message.append("Last Name: ").append(author.getLastName()).append("\n");
+            message.append("Author Books:\n");
+            for (Book book : author.getBookList()) {
+                message.append("  - ").append(book.getTitle()).append("\n");
+            }
+            message.append("----------------------------\n\n");
+        }
 
-                        dbm.updateBook(BookToUpdate);
-                        System.out.println("Book updated successfully!");
+        JTextArea textArea = new JTextArea(message.toString());
+        textArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        textArea.setEditable(false);
 
-                        books = dbm.getAllBooks();
-                        authors = dbm.getAllAuthors();
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
 
-                    } else {
-                        System.out.println("Book with ISBN " + bookISBN + " not found!");
-                    }
-                    break;
-                case 4:
-                        System.out.print("Enter Author First Name: ");
-                        Scanner newAuthorFirstNameInput = new Scanner(System.in);
-                        String newAuthorFirstName = newAuthorFirstNameInput.nextLine();
+        JOptionPane.showMessageDialog(null, scrollPane, "Authors", JOptionPane.INFORMATION_MESSAGE);
+    }
 
-                        System.out.print("Enter Author Last Name: ");
-                        Scanner newAuthorLastNameInput = new Scanner(System.in);
-                        String newAuthorLastName = newAuthorLastNameInput.nextLine();
+    private static void updateBook() {
+        String bookISBN = JOptionPane.showInputDialog(null, "Enter Book ISBN:", "Update Book", JOptionPane.QUESTION_MESSAGE);
+        Book bookToUpdate = dbm.findBookByIsbn(bookISBN, books);
 
-                        Author authorToAdd = new Author(0, newAuthorFirstName, newAuthorLastName);
+        if (bookToUpdate != null) {
+            String updatedBookTitle = JOptionPane.showInputDialog(null, "Enter New Book Title:", "Update Book", JOptionPane.QUESTION_MESSAGE);
+            String updatedBookCopyrightYear = JOptionPane.showInputDialog(null, "Enter New Book Copyright Year:", "Update Book", JOptionPane.QUESTION_MESSAGE);
+            String updatedBookEditionNumberStr = JOptionPane.showInputDialog(null, "Enter New Book Edition Number:", "Update Book", JOptionPane.QUESTION_MESSAGE);
 
-                        dbm.addAuthor(authorToAdd);
-                        System.out.println("Author added successfully!");
+            int updatedBookEditionNumber = Integer.parseInt(updatedBookEditionNumberStr);
 
-                        authors = dbm.getAllAuthors();
-                        books = dbm.getAllBooks();
-                        break;
-                case 5:
-                    System.out.print("Enter New Book ISBN: ");
-                    Scanner newBookISBNInput = new Scanner(System.in);
-                    String newBookISBN = newBookISBNInput.nextLine();
+            bookToUpdate.setTitle(updatedBookTitle);
+            bookToUpdate.setEditionNumber(updatedBookEditionNumber);
+            bookToUpdate.setCopyright(updatedBookCopyrightYear);
 
-                    System.out.print("Enter New Book Title: ");
-                    Scanner newBookTitleInput = new Scanner(System.in);
-                    String newBookTitle = newBookTitleInput.nextLine();
+            dbm.updateBook(bookToUpdate);
+            JOptionPane.showMessageDialog(null, "Book updated successfully!", "Update Book", JOptionPane.INFORMATION_MESSAGE);
 
-                    System.out.print("Enter New Book Copyright Year: ");
-                    Scanner newBookCopyrightYearInput = new Scanner(System.in);
-                    String newBookCopyrightYear = newBookCopyrightYearInput.nextLine();
+            books = dbm.getAllBooks();
+            authors = dbm.getAllAuthors();
+        } else {
+            JOptionPane.showMessageDialog(null, "Book with ISBN " + bookISBN + " not found!", "Update Book", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
-                    System.out.print("Enter New Book Edition Number: ");
-                    Scanner newBookEditionNumberInput = new Scanner(System.in);
-                    int newBookEditionNumber = newBookEditionNumberInput.nextInt();
+    private static void updateAuthor() {
+        String authorIDStr = JOptionPane.showInputDialog(null, "Enter Author ID:", "Update Author", JOptionPane.QUESTION_MESSAGE);
+        int authorToEditID = Integer.parseInt(authorIDStr);
+        Author authorToUpdate = dbm.findAuthorById(authorToEditID, authors);
 
-                    Book newBook = new Book(newBookISBN, newBookTitle, newBookEditionNumber, newBookCopyrightYear);
+        if (authorToUpdate != null) {
+            String authorNewFirstName = JOptionPane.showInputDialog(null, "Enter New First Name:", "Update Author", JOptionPane.QUESTION_MESSAGE);
+            String authorNewLastName = JOptionPane.showInputDialog(null, "Enter New Last Name:", "Update Author", JOptionPane.QUESTION_MESSAGE);
 
-                    // Display existing authors and allow the user to select or add new authors
-                    System.out.println();
-                    System.out.println("Existing Authors:");
-                    for (int i = 0; i < authors.size(); i++) {
-                        Author author = authors.get(i);
-                        System.out.println(i + 1 + ": " + author.getFirstName() + " " + author.getLastName());
-                    }
+            authorToUpdate.setFirstName(authorNewFirstName);
+            authorToUpdate.setLastName(authorNewLastName);
 
-                    System.out.print("Enter number of authors to add to the book: ");
-                    int numAuthors = newBookISBNInput.nextInt();
-                    newBookISBNInput.nextLine(); // Consume newline
+            dbm.updateAuthor(authorToUpdate);
+            JOptionPane.showMessageDialog(null, "Author updated successfully!", "Update Author", JOptionPane.INFORMATION_MESSAGE);
 
-                    for (int i = 0; i < numAuthors; i++) {
-                        System.out.print("Do you want to add an existing author? (yes/no): ");
-                        String choice = newBookISBNInput.nextLine();
+            books = dbm.getAllBooks();
+            authors = dbm.getAllAuthors();
+        } else {
+            JOptionPane.showMessageDialog(null, "Author with ID " + authorToEditID + " not found!", "Update Author", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
-                        if (choice.equalsIgnoreCase("yes")) {
-                            System.out.print("Enter author number from the list above: ");
-                            int authorIndex = newBookISBNInput.nextInt() - 1;
-                            newBookISBNInput.nextLine(); // Consume newline
+    private static void addNewAuthor() {
+        String newAuthorFirstName = JOptionPane.showInputDialog(null, "Enter Author First Name:", "Add New Author", JOptionPane.QUESTION_MESSAGE);
+        String newAuthorLastName = JOptionPane.showInputDialog(null, "Enter Author Last Name:", "Add New Author", JOptionPane.QUESTION_MESSAGE);
 
-                            if (authorIndex >= 0 && authorIndex < authors.size()) {
-                                Author existingAuthor = authors.get(authorIndex);
-                                newBook.addAuthor(existingAuthor);
-                            } else {
-                                System.out.println("Invalid author number.");
-                            }
-                        } else {
-                            System.out.print("Enter Author First Name: ");
-                            String firstName = newBookISBNInput.nextLine();
-                            System.out.print("Enter Author Last Name: ");
-                            String lastName = newBookISBNInput.nextLine();
+        Author authorToAdd = new Author(0, newAuthorFirstName, newAuthorLastName);
 
-                            int newAuthorID = authors.getLast().getAuthorID() + 1;
+        dbm.addAuthor(authorToAdd);
+        JOptionPane.showMessageDialog(null, "Author added successfully!", "Add New Author", JOptionPane.INFORMATION_MESSAGE);
 
-                            Author newAuthor = new Author(newAuthorID, firstName, lastName);
-                            newBook.addAuthor(newAuthor);
-                        }
-                    }
+        authors = dbm.getAllAuthors();
+        books = dbm.getAllBooks();
+    }
 
-                    dbm.addBook(newBook);
+    private static void addNewBook() {
+        String newBookISBN = JOptionPane.showInputDialog(null, "Enter New Book ISBN:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+        String newBookTitle = JOptionPane.showInputDialog(null, "Enter New Book Title:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+        String newBookCopyrightYear = JOptionPane.showInputDialog(null, "Enter New Book Copyright Year:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+        String newBookEditionNumberStr = JOptionPane.showInputDialog(null, "Enter New Book Edition Number:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
 
-                    System.out.println("Book added successfully!");
-                    books = dbm.getAllBooks();
-                    authors = dbm.getAllAuthors();
-                    break;
-                case 6:
-                    return;
+        int newBookEditionNumber = Integer.parseInt(newBookEditionNumberStr);
+
+        Book newBook = new Book(newBookISBN, newBookTitle, newBookEditionNumber, newBookCopyrightYear);
+
+        StringBuilder authorsList = new StringBuilder("Existing Authors:\n");
+        for (int i = 0; i < authors.size(); i++) {
+            Author author = authors.get(i);
+            authorsList.append(i + 1).append(": ").append(author.getFirstName()).append(" ").append(author.getLastName()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, authorsList.toString(), "Add New Book", JOptionPane.INFORMATION_MESSAGE);
+
+        String numAuthorsStr = JOptionPane.showInputDialog(null, "Enter number of authors to add to the book:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+        int numAuthors = Integer.parseInt(numAuthorsStr);
+
+        for (int i = 0; i < numAuthors; i++) {
+            String choice = JOptionPane.showInputDialog(null, "Do you want to add an existing author? (yes/no):", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+
+            if (choice.equalsIgnoreCase("yes")) {
+                String authorIndexStr = JOptionPane.showInputDialog(null, "Enter author number from the list above:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+                int authorIndex = Integer.parseInt(authorIndexStr) - 1;
+
+                if (authorIndex >= 0 && authorIndex < authors.size()) {
+                    Author existingAuthor = authors.get(authorIndex);
+                    newBook.addAuthor(existingAuthor);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid author number.", "Add New Book", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                String firstName = JOptionPane.showInputDialog(null, "Enter Author First Name:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+                String lastName = JOptionPane.showInputDialog(null, "Enter Author Last Name:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+
+                int newAuthorID = authors.getLast().getAuthorID() + 1;
+
+                Author newAuthor = new Author(newAuthorID, firstName, lastName);
+                newBook.addAuthor(newAuthor);
             }
         }
+
+        dbm.addBook(newBook);
+        JOptionPane.showMessageDialog(null, "Book added successfully!", "Add New Book", JOptionPane.INFORMATION_MESSAGE);
+        books = dbm.getAllBooks();
+        authors = dbm.getAllAuthors();
+    }
+
+    private static void deleteBook() {
+        String bookToDeleteISBN = JOptionPane.showInputDialog(null, "Enter Book ISBN:", "Delete Book", JOptionPane.QUESTION_MESSAGE);
+
+        dbm.deleteBook(bookToDeleteISBN);
+        JOptionPane.showMessageDialog(null, "Book deleted successfully!", "Delete Book", JOptionPane.INFORMATION_MESSAGE);
+
+        books = dbm.getAllBooks();
+        authors = dbm.getAllAuthors();
+    }
+
+    private static void deleteAuthor() {
+        String authorIDStr = JOptionPane.showInputDialog(null, "Enter Author ID:", "Delete Author", JOptionPane.QUESTION_MESSAGE);
+        int authorToDeleteID = Integer.parseInt(authorIDStr);
+
+        dbm.deleteAuthor(authorToDeleteID);
+        JOptionPane.showMessageDialog(null, "Author deleted successfully!", "Delete Author", JOptionPane.INFORMATION_MESSAGE);
+
+        books = dbm.getAllBooks();
+        authors = dbm.getAllAuthors();
     }
 }

@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class BookDatabaseManager {
     private static final String DB_URL = "jdbc:mariadb://localhost:3306/books";
     private static final String USER = "root";
@@ -243,6 +244,15 @@ public class BookDatabaseManager {
     }
 
     public void deleteBook(String isbn) {
+        String authorISBNSQL = "DELETE FROM authorISBN WHERE isbn = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(authorISBNSQL)) {
+            pstmt.setString(1, isbn);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         String sql = "DELETE FROM titles WHERE isbn = ?";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -254,6 +264,15 @@ public class BookDatabaseManager {
     }
 
     public void deleteAuthor(int authorID) {
+        String authorISBNSQL = "DELETE FROM authorISBN WHERE authorID = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(authorISBNSQL)) {
+            pstmt.setInt(1, authorID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         String sql = "DELETE FROM authors WHERE authorID = ?";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
