@@ -6,12 +6,19 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+/***
+ * Represents the main application for managing books and authors.
+ */
 public class BookApplication {
 
     private static final BookDatabaseManager dbm = new BookDatabaseManager();
     private static List<Book> books = dbm.getAllBooks();
     private static List<Author> authors = dbm.getAllAuthors();
 
+    /***
+     * The main method that initializes and starts the application
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Java Book Application");
@@ -51,6 +58,12 @@ public class BookApplication {
         });
     }
 
+    /***
+     * Adds a button to the specified panel with the given text and action listener.
+     * @param panel The panel that the button is added to.
+     * @param text The text displayed on the button.
+     * @param action The action listener for the button.
+     */
     private static void addButton(JPanel panel, String text, ActionListener action) {
         JButton button = new JButton(text);
         button.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -61,6 +74,9 @@ public class BookApplication {
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
     }
 
+    /***
+     * Displays all books in a dialog window with detailed information.
+     */
     private static void showAllBooks() {
         StringBuilder message = new StringBuilder("*** All Books ***\n");
         for (Book book : books) {
@@ -86,6 +102,9 @@ public class BookApplication {
         JOptionPane.showMessageDialog(null, scrollPane, "Books", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /**
+     * Displays all authors in a dialog window with detailed information.
+     */
     private static void showAllAuthors() {
         StringBuilder message = new StringBuilder("*** All Authors ***\n");
         for (Author author : authors) {
@@ -110,6 +129,9 @@ public class BookApplication {
         JOptionPane.showMessageDialog(null, scrollPane, "Authors", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    /***
+     * Prompts the user to update book information based on ISBN and updates the book in the database.
+     */
     private static void updateBook() {
         String bookISBN = JOptionPane.showInputDialog(null, "Enter Book ISBN:", "Update Book", JOptionPane.QUESTION_MESSAGE);
         Book bookToUpdate = dbm.findBookByIsbn(bookISBN, books);
@@ -135,6 +157,9 @@ public class BookApplication {
         }
     }
 
+    /***
+     * Prompts the user to update an author by their ID and updates the author in the database.
+     */
     private static void updateAuthor() {
         String authorIDStr = JOptionPane.showInputDialog(null, "Enter Author ID:", "Update Author", JOptionPane.QUESTION_MESSAGE);
         int authorToEditID = Integer.parseInt(authorIDStr);
@@ -157,6 +182,9 @@ public class BookApplication {
         }
     }
 
+    /***
+     * Prompts the user to add a new author and updates list of authors in the database.
+     */
     private static void addNewAuthor() {
         String newAuthorFirstName = JOptionPane.showInputDialog(null, "Enter Author First Name:", "Add New Author", JOptionPane.QUESTION_MESSAGE);
         String newAuthorLastName = JOptionPane.showInputDialog(null, "Enter Author Last Name:", "Add New Author", JOptionPane.QUESTION_MESSAGE);
@@ -170,6 +198,9 @@ public class BookApplication {
         books = dbm.getAllBooks();
     }
 
+    /***
+     * Prompts the user to add a new book and either associate it with an existing author, or create a new author for the book before updating the database with any new information.
+     */
     private static void addNewBook() {
         String newBookISBN = JOptionPane.showInputDialog(null, "Enter New Book ISBN:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
         String newBookTitle = JOptionPane.showInputDialog(null, "Enter New Book Title:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
@@ -185,7 +216,6 @@ public class BookApplication {
             Author author = authors.get(i);
             authorsList.append(i + 1).append(": ").append(author.getFirstName()).append(" ").append(author.getLastName()).append("\n");
         }
-        JOptionPane.showMessageDialog(null, authorsList.toString(), "Add New Book", JOptionPane.INFORMATION_MESSAGE);
 
         String numAuthorsStr = JOptionPane.showInputDialog(null, "Enter number of authors to add to the book:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
         int numAuthors = Integer.parseInt(numAuthorsStr);
@@ -194,7 +224,7 @@ public class BookApplication {
             String choice = JOptionPane.showInputDialog(null, "Do you want to add an existing author? (yes/no):", "Add New Book", JOptionPane.QUESTION_MESSAGE);
 
             if (choice.equalsIgnoreCase("yes")) {
-                String authorIndexStr = JOptionPane.showInputDialog(null, "Enter author number from the list above:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
+                String authorIndexStr = JOptionPane.showInputDialog(null, authorsList + "Enter author number from the list above:", "Add New Book", JOptionPane.QUESTION_MESSAGE);
                 int authorIndex = Integer.parseInt(authorIndexStr) - 1;
 
                 if (authorIndex >= 0 && authorIndex < authors.size()) {
@@ -220,6 +250,9 @@ public class BookApplication {
         authors = dbm.getAllAuthors();
     }
 
+    /***
+     * Prompts the user to delete a book by its ISBN and updates the database with any changes.
+     */
     private static void deleteBook() {
         String bookToDeleteISBN = JOptionPane.showInputDialog(null, "Enter Book ISBN:", "Delete Book", JOptionPane.QUESTION_MESSAGE);
 
@@ -230,6 +263,9 @@ public class BookApplication {
         authors = dbm.getAllAuthors();
     }
 
+    /***
+     * Prompts the user to delete an author by their ID and updates the database with any changes.
+     */
     private static void deleteAuthor() {
         String authorIDStr = JOptionPane.showInputDialog(null, "Enter Author ID:", "Delete Author", JOptionPane.QUESTION_MESSAGE);
         int authorToDeleteID = Integer.parseInt(authorIDStr);

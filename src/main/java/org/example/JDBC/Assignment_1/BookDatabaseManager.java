@@ -4,6 +4,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/***
+ * Manages database operations for books and authors.
+ */
 @SuppressWarnings("ALL")
 public class BookDatabaseManager {
     private static final String DB_URL = "jdbc:mariadb://localhost:3306/books";
@@ -13,15 +16,27 @@ public class BookDatabaseManager {
     private final List<Book> books;
     private final List<Author> authors;
 
+    /***
+     * Constructs a new BookDatabaseManager and initializes the lists of books and authors.
+     */
     public BookDatabaseManager() {
         books = new ArrayList<>();
         authors = new ArrayList<>();
     }
 
+    /***
+     * Connects to the database.
+     * @return A Connection object to the database.
+     * @throws SQLException
+     */
     private Connection connect() throws SQLException {
         return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 
+    /***
+     * Adds a book to the database and links it to its authors.
+     * @param book The book to add.
+     */
     public void addBook(Book book) {
         String sql = "INSERT INTO titles (isbn, title, editionNumber, copyright) VALUES (?, ?, ?, ?)";
         try (Connection conn = connect();
@@ -45,6 +60,11 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Checks if the author exists in the database.
+     * @param authorID The ID of the author.
+     * @return True if the author exists, false otherwise.
+     */
     private boolean authorExists(int authorID) {
         String sql = "SELECT 1 FROM authors WHERE authorID = ?";
         try (Connection conn = connect();
@@ -59,6 +79,10 @@ public class BookDatabaseManager {
         return false;
     }
 
+    /***
+     * Adds an author to the databse.
+     * @param author The author to add.
+     */
     public void addAuthor(Author author) {
         String sql = "INSERT INTO authors (firstName, lastName) VALUES (?, ?)";
         try (Connection conn = connect();
@@ -73,6 +97,11 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Links a book to an author in the database.
+     * @param book The book to be linked to an author.
+     * @param author The author to be linked to a book.
+     */
     private void linkBookAuthor(Book book, Author author) {
         String sql = "INSERT INTO authorISBN (authorID, isbn) VALUES (?, ?)";
         try (Connection conn = connect();
@@ -85,6 +114,10 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Retrieves all books from the databse.
+     * @return A list of all books in the database.
+     */
     public List<Book> getAllBooks() {
         List<Book> bookList = new ArrayList<>();
         String sql = "SELECT * FROM titles";
@@ -128,6 +161,10 @@ public class BookDatabaseManager {
         return bookList;
     }
 
+    /***
+     * Retrieves all authors from the database.
+     * @return A list of all authors in the database.
+     */
     public List<Author> getAllAuthors() {
         List<Author> authorList = new ArrayList<>();
         String sql = "SELECT * FROM authors";
@@ -171,6 +208,11 @@ public class BookDatabaseManager {
         return authorList;
     }
 
+    /***
+     * Loads the authors for each book from the databse and links them.
+     * @param bookList The list of books.
+     * @param authorList The list of authors.
+     */
     private void loadBookAuthors(List<Book> bookList, List<Author> authorList) {
         String sql = "SELECT * FROM authorISBN";
         try (Connection conn = connect();
@@ -193,6 +235,11 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Loads the books for each author from the database and links them.
+     * @param authorList The list of authors.
+     * @param bookList The list of books.
+     */
     private void loadAuthorBooks(List<Author> authorList, List<Book> bookList) {
         String sql = "SELECT * FROM authorISBN";
         try (Connection conn = connect();
@@ -215,6 +262,10 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Updates a book in the database.
+     * @param book The book to be updated.
+     */
     public void updateBook(Book book) {
         String sql = "UPDATE titles SET title = ?, editionNumber = ?, copyright = ? WHERE isbn = ?";
         try (Connection conn = connect();
@@ -230,6 +281,10 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Updates an author in the database.
+     * @param author The author to be updated.
+     */
     public void updateAuthor(Author author) {
         String sql = "UPDATE authors SET firstName = ?, lastName = ? WHERE authorID = ?";
         try (Connection conn = connect();
@@ -243,6 +298,10 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Deletes a book from the database that has an ISBN matching the param.
+     * @param isbn The ISBN of the book to be deleted.
+     */
     public void deleteBook(String isbn) {
         String authorISBNSQL = "DELETE FROM authorISBN WHERE isbn = ?";
         try (Connection conn = connect();
@@ -263,6 +322,10 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Deletes an author from the database that has an AuthorID matching the param.
+     * @param authorID The AuthorID of the author to be deleted.
+     */
     public void deleteAuthor(int authorID) {
         String authorISBNSQL = "DELETE FROM authorISBN WHERE authorID = ?";
         try (Connection conn = connect();
@@ -283,6 +346,12 @@ public class BookDatabaseManager {
         }
     }
 
+    /***
+     * Finds a book from a given bookList by its ISBN.
+     * @param isbn The ISBN being looked for in the list.
+     * @param bookList The list of existing books.
+     * @return Book object with ISBN matching the param.
+     */
     public Book findBookByIsbn(String isbn, List<Book> bookList) {
         for (Book book : bookList) {
             if (book.getIsbn().equals(isbn)) {
@@ -292,6 +361,12 @@ public class BookDatabaseManager {
         return null;
     }
 
+    /***
+     * Finds an author from a given authorList by their authorID.
+     * @param authorID The authorID being looked for in the list.
+     * @param authorList The list of existing authors.
+     * @return Author object with authorID matching the param.
+     */
     public Author findAuthorById(int authorID, List<Author> authorList) {
         for (Author author : authorList) {
             if (author.getAuthorID() == authorID) {
